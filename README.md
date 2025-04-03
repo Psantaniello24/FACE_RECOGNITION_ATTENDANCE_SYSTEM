@@ -9,6 +9,7 @@ Modern facial recognition system that automates attendance tracking. Captures fa
 
 ## Try it at : https://face-recognition-attendance-system-d8b4.onrender.com/
 
+(https://github.com/PSantaniello24/ai-art-generator/raw/main/example_images/violet_ferrari.png)
 
 ## Features
 
