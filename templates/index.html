@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --success-color: #4cc9f0;
+            --background-color: #f8f9fa;
+            --card-background: #ffffff;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            height: 600px;
+            margin: 0 auto;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            background-color: #2b2d42;
+            object-fit: cover;
+        }
+
+        .control-panel {
+            background: var(--card-background);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .btn-modern {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-start {
+            background: var(--primary-color);
+            border: none;
+        }
+
+        .btn-start:hover {
+            background: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn-capture {
+            background: var(--success-color);
+            border: none;
+        }
+
+        .btn-capture:hover {
+            background: #3da8d9;
+            transform: translateY(-2px);
+        }
+
+        .register-card {
+            background: var(--card-background);
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .register-card .card-header {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+        }
+
+        .attendance-card {
+            background: var(--card-background);
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            height: 100%;
+        }
+
+        .attendance-card .card-header {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .attendance-list {
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .attendance-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .attendance-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .attendance-list::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .list-group-item {
+            border-radius: 10px !important;
+            margin-bottom: 0.5rem;
+            border: 1px solid #e9ecef;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .list-group-item:hover {
+            transform: translateX(5px);
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .status-badge.present {
+            background-color: #4cc9f0;
+            color: white;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: white;
+            display: none;
+        }
+
+        .camera-overlay i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <h1 class="page-title">
+            <i class="fas fa-user-check me-2"></i>
+            Face Recognition Attendance System
+        </h1>
+        
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="video-container mb-4">
+                    <video id="videoElement" autoplay></video>
+                    <div class="camera-overlay" id="cameraOverlay">
+                        <i class="fas fa-camera"></i>
+                        <p>Camera is starting...</p>
+                    </div>
+                </div>
+                
+                <div class="control-panel text-center mb-4">
+                    <button id="startButton" class="btn btn-modern btn-start me-3">
+                        <i class="fas fa-video me-2"></i>Start Camera
+                    </button>
+                    <button id="captureButton" class="btn btn-modern btn-capture" disabled>
+                        <i class="fas fa-camera me-2"></i>Capture
+                    </button>
+                </div>
+                
+                <div class="register-card">
+                    <div class="card-header">
+                        <i class="fas fa-user-plus me-2"></i>Register New Face
+                    </div>
+                    <div class="card-body">
+                        <form id="registerForm">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="nameInput" placeholder="Enter full name" required>
+                            </div>
+                            <button type="submit" class="btn btn-modern btn-start w-100">
+                                <i class="fas fa-save me-2"></i>Register Face
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="attendance-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-clock me-2"></i>Recent Attendance
+                        </div>
+                        <button id="clearAttendanceButton" class="btn btn-sm btn-danger">
+                            <i class="fas fa-trash me-1"></i>Clear All
+                        </button>
+                    </div>
+                    <div class="attendance-list">
+                        <ul id="attendanceList" class="list-group list-group-flush">
+                            <!-- Attendance records will be populated here -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stream = null;
+        const video = document.getElementById('videoElement');
+        const startButton = document.getElementById('startButton');
+        const captureButton = document.getElementById('captureButton');
+        const registerForm = document.getElementById('registerForm');
+        const attendanceList = document.getElementById('attendanceList');
+        const cameraOverlay = document.getElementById('cameraOverlay');
+        const clearAttendanceButton = document.getElementById('clearAttendanceButton');
+
+        // Clear attendance records
+        clearAttendanceButton.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to delete all attendance records? This action cannot be undone.')) {
+                try {
+                    clearAttendanceButton.disabled = true;
+                    clearAttendanceButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Clearing...';
+                    
+                    const response = await fetch('/attendance', {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        alert(result.message);
+                        updateAttendanceList(); // Refresh the list
+                    } else {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Failed to delete attendance records');
+                    }
+                } catch (err) {
+                    console.error('Error deleting attendance records:', err);
+                    alert(err.message || 'Error deleting attendance records. Please try again.');
+                } finally {
+                    clearAttendanceButton.disabled = false;
+                    clearAttendanceButton.innerHTML = '<i class="fas fa-trash me-1"></i>Clear All';
+                }
+            }
+        });
+
+        // Start camera
+        startButton.addEventListener('click', async () => {
+            try {
+                cameraOverlay.style.display = 'block';
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                startButton.disabled = true;
+                captureButton.disabled = false;
+                cameraOverlay.style.display = 'none';
+            } catch (err) {
+                console.error('Error accessing camera:', err);
+                alert('Error accessing camera. Please make sure you have granted camera permissions.');
+                cameraOverlay.style.display = 'none';
+            }
+        });
+
+        // Capture and recognize face
+        captureButton.addEventListener('click', async () => {
+            try {
+                captureButton.disabled = true;
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                const formData = new FormData();
+                formData.append('file', blob);
+
+                const response = await fetch('/recognize', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(blob);
+                    video.srcObject = null;
+                    video.src = img.src;
+                    
+                    // Wait a moment before updating attendance list
+                    setTimeout(updateAttendanceList, 1000);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to recognize face');
+                }
+            } catch (err) {
+                console.error('Error recognizing face:', err);
+                alert('Error recognizing face. Please try again.');
+            } finally {
+                captureButton.disabled = false;
+                // Restart video after 3 seconds
+                setTimeout(() => {
+                    if (stream) {
+                        video.srcObject = stream;
+                    }
+                }, 3000);
+            }
+        });
+
+        // Register new face
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('nameInput').value;
+            
+            if (!stream) {
+                alert('Please start the camera first');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            canvas.getContext('2d').drawImage(video, 0, 0);
+            
+            try {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                const formData = new FormData();
+                formData.append('file', blob);
+                formData.append('name', name);
+
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(result.message);
+                    document.getElementById('nameInput').value = '';
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Error registering face');
+                }
+            } catch (err) {
+                console.error('Error registering face:', err);
+                alert(err.message || 'Error registering face. Please try again.');
+            }
+        });
+
+        // Update attendance list
+        async function updateAttendanceList() {
+            try {
+                const response = await fetch('/attendance');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to fetch attendance');
+                }
+                const records = await response.json();
+                
+                if (Array.isArray(records)) {
+                    attendanceList.innerHTML = records.map(record => `
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${record.name}</strong>
+                                    <span class="status-badge present">Present</span>
+                                    <br>
+                                    <small class="text-muted">
+                                        <i class="far fa-clock me-1"></i>
+                                        ${new Date(record.timestamp).toLocaleString()}
+                                    </small>
+                                </div>
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                        </li>
+                    `).join('');
+                } else {
+                    throw new Error('Invalid attendance data received');
+                }
+            } catch (err) {
+                console.error('Error fetching attendance:', err);
+                attendanceList.innerHTML = `
+                    <li class="list-group-item text-danger">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        Error loading attendance data
+                    </li>
+                `;
+            }
+        }
+
+        // Initial attendance list update
+        updateAttendanceList();
+    </script>
+</body>
+</html> 
