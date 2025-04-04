@@ -34,7 +34,7 @@ Modern facial recognition system that automates attendance tracking. Captures fa
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/facetrack-pro.git
+git clone https://github.com/Psantaniello24/FACE_RECOGNITION_ATTENDANCE_SYSTEM.git
 cd facetrack-pro
 
 # Install dependencies
